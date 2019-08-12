@@ -2,13 +2,15 @@
 # based on https://github.com/experiencor/keras-yolo3
 import numpy as np
 from numpy import expand_dims
-from keras.models import load_model
+from keras.models import load_model, Model
 from keras.preprocessing.image import load_img
 from keras.preprocessing.image import img_to_array
 from matplotlib import pyplot
 from matplotlib.patches import Rectangle
+import cv2
 
-DATA_PATH = './data/'
+DATA_PATH = 'data'
+IMG_SAVED_PATH = 'static/'
 
 class BoundBox:
     def __init__(self, xmin, ymin, xmax, ymax, objness=None, classes=None):
@@ -154,7 +156,6 @@ def get_boxes(boxes, labels, thresh):
     return v_boxes, v_labels, v_scores
 
 
-# draw all results
 def draw_boxes(filename, v_boxes, v_labels, v_scores):
     # load the image
     data = pyplot.imread(filename)
@@ -175,53 +176,97 @@ def draw_boxes(filename, v_boxes, v_labels, v_scores):
         ax.add_patch(rect)
         # draw text and score in top left corner
         label = "%s (%.3f)" % (v_labels[i], v_scores[i])
-        pyplot.text(x1, y1, label, color='white')
+        pyplot.text(x1, y1, label, bbox=dict(facecolor='green', alpha=0.8))
     # show the plot
-    pyplot.figure(figsiz=(12,9))
-    pyplot.show()
+    # pyplot.figure(figsize=(12,9))
+    pyplot.axis('off')
+    pyplot.savefig(filename[:-4] + '_detected' + filename[-4:], pad_inches=0, bbox_inches='tight', transparent=True)
+    # pyplot.show()
+    pyplot.clf()
+    return filename[7:-4] + '_detected' + filename[-4:]
 
 
-# load yolov3 model
-model = load_model(DATA_PATH + 'model.h5')
-model.summary()
-# define the expected input shape for the model
-input_w, input_h = 416, 416
-# define our new photo
-photo_filename = item
-# photo_filename = 'zebra.jpg'
-# load and prepare image
-image, image_w, image_h = load_image_pixels(photo_filename, (input_w, input_h))
-# make prediction
-yhat = model.predict(image)
-# summarize the shape of the list of arrays
-print([a.shape for a in yhat])
-# define the anchors
-anchors = [[116, 90, 156, 198, 373, 326], [30, 61, 62, 45, 59, 119], [10, 13, 16, 30, 33, 23]]
-# define the probability threshold for detected objects
-class_threshold = 0.6
-boxes = list()
-for i in range(len(yhat)):
-    # decode the output of the network
-    boxes += decode_netout(yhat[i][0], anchors[i], class_threshold, input_h, input_w)
-# correct the sizes of the bounding boxes for the shape of the image
-correct_yolo_boxes(boxes, image_h, image_w, input_h, input_w)
-# suppress non-maximal boxes
-do_nms(boxes, 0.5)
-# define the labels
-labels = ["person", "bicycle", "car", "motorbike", "aeroplane", "bus", "train", "truck",
-          "boat", "traffic light", "fire hydrant", "stop sign", "parking meter", "bench",
-          "bird", "cat", "dog", "horse", "sheep", "cow", "elephant", "bear", "zebra", "giraffe",
-          "backpack", "umbrella", "handbag", "tie", "suitcase", "frisbee", "skis", "snowboard",
-          "sports ball", "kite", "baseball bat", "baseball glove", "skateboard", "surfboard",
-          "tennis racket", "bottle", "wine glass", "cup", "fork", "knife", "spoon", "bowl", "banana",
-          "apple", "sandwich", "orange", "broccoli", "carrot", "hot dog", "pizza", "donut", "cake",
-          "chair", "sofa", "pottedplant", "bed", "diningtable", "toilet", "tvmonitor", "laptop", "mouse",
-          "remote", "keyboard", "cell phone", "microwave", "oven", "toaster", "sink", "refrigerator",
-          "book", "clock", "vase", "scissors", "teddy bear", "hair drier", "toothbrush"]
-# get the details of the detected objects
-v_boxes, v_labels, v_scores = get_boxes(boxes, labels, class_threshold)
-# summarize what we found
-for i in range(len(v_boxes)):
-    print(v_labels[i], v_scores[i])
-# draw what we found
-draw_boxes(photo_filename, v_boxes, v_labels, v_scores)
+def init_model():
+    model = load_model(DATA_PATH + '/model.h5')
+    # Fixed bug "<tensor> is not an element of this graph." when loading model
+    model._make_predict_function()
+    print("Model loaded")
+    return model
+
+
+def detect_object(model, image_name):
+    # view yolov3 model
+    model.summary()
+    # print(len(model.layers))
+    # print(model.layers[250].output)
+    new_model = extract_model(model)
+    # define the expected input shape for the model
+    input_w, input_h = 416, 416
+
+    # define our new photo
+    image_path = IMG_SAVED_PATH + image_name
+
+    # load and prepare image
+    image, image_w, image_h = load_image_pixels(image_path, (input_w, input_h))
+
+    # make prediction
+    yhat = model.predict(image)
+
+    # summarize the shape of the list of arrays
+    print([a.shape for a in yhat])
+
+    feature = new_model.predict(image)
+    print("feature", feature.shape)
+
+    # define the anchors
+    anchors = [[116, 90, 156, 198, 373, 326], [30, 61, 62, 45, 59, 119], [10, 13, 16, 30, 33, 23]]
+
+    # define the probability threshold for detected objects
+    class_threshold = 0.6
+    boxes = list()
+
+    for i in range(len(yhat)):
+        # decode the output of the network
+        boxes += decode_netout(yhat[i][0], anchors[i], class_threshold, input_h, input_w)
+
+    # correct the sizes of the bounding boxes for the shape of the image
+    correct_yolo_boxes(boxes, image_h, image_w, input_h, input_w)
+
+    # suppress non-maximal boxes
+    do_nms(boxes, 0.5)
+
+    # define the labels
+    labels = ["person", "bicycle", "car", "motorbike", "aeroplane", "bus", "train", "truck",
+              "boat", "traffic light", "fire hydrant", "stop sign", "parking meter", "bench",
+              "bird", "cat", "dog", "horse", "sheep", "cow", "elephant", "bear", "zebra", "giraffe",
+              "backpack", "umbrella", "handbag", "tie", "suitcase", "frisbee", "skis", "snowboard",
+              "sports ball", "kite", "baseball bat", "baseball glove", "skateboard", "surfboard",
+              "tennis racket", "bottle", "wine glass", "cup", "fork", "knife", "spoon", "bowl", "banana",
+              "apple", "sandwich", "orange", "broccoli", "carrot", "hot dog", "pizza", "donut", "cake",
+              "chair", "sofa", "pottedplant", "bed", "diningtable", "toilet", "tvmonitor", "laptop", "mouse",
+              "remote", "keyboard", "cell phone", "microwave", "oven", "toaster", "sink", "refrigerator",
+              "book", "clock", "vase", "scissors", "teddy bear", "hair drier", "toothbrush"]
+
+    # get the details of the detected objects
+    v_boxes, v_labels, v_scores = get_boxes(boxes, labels, class_threshold)
+
+    # summarize what we found
+    for i in range(len(v_boxes)):
+        print(v_labels[i], v_scores[i])
+
+    # draw what we found and save to file
+    detected_image = draw_boxes(image_path, v_boxes, v_labels, v_scores)
+    return detected_image
+
+
+def extract_model(model):
+    # re-structure the model
+    # model1 = load_model(DATA_PATH + '/model.h5')
+    # model1.layers.pop()
+    new_model = Model(inputs=model.inputs, outputs=model.layers[-1].output)
+    # model._make_predict_function()
+    # new_model._make_predict_function()
+    # summarize
+    # print(new_model.summary())
+    print(new_model.layers[-1].get_config())
+    return new_model

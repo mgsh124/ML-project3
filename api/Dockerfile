@@ -10,7 +10,8 @@ RUN apt-get install -y build-essential
 RUN ["conda", "create", "-n", "myenv", "python=3.7"]
 
 # Install libraries inside conda environment
-RUN /bin/bash -c "source activate myenv && pip install flask && pip install numpy && pip install keras"
+RUN /bin/bash -c "source activate myenv && pip install flask && pip install numpy && \
+pip install keras && pip install pillow"
 
 # Copy API file
 COPY api.py /app/
