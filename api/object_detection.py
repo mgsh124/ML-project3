@@ -7,7 +7,6 @@ from keras.preprocessing.image import load_img
 from keras.preprocessing.image import img_to_array
 from matplotlib import pyplot
 from matplotlib.patches import Rectangle
-import cv2
 
 DATA_PATH = 'data'
 IMG_SAVED_PATH = 'static/'
@@ -190,16 +189,16 @@ def init_model():
     model = load_model(DATA_PATH + '/model.h5')
     # Fixed bug "<tensor> is not an element of this graph." when loading model
     model._make_predict_function()
-    print("Model loaded")
+    print("Object detection model loaded")
     return model
 
 
 def detect_object(model, image_name):
     # view yolov3 model
-    model.summary()
+    # model.summary()
     # print(len(model.layers))
     # print(model.layers[250].output)
-    new_model = extract_model(model)
+    # new_model = extract_model(model)
     # define the expected input shape for the model
     input_w, input_h = 416, 416
 
@@ -215,8 +214,8 @@ def detect_object(model, image_name):
     # summarize the shape of the list of arrays
     print([a.shape for a in yhat])
 
-    feature = new_model.predict(image)
-    print("feature", feature.shape)
+    # feature = new_model.predict(image)
+    # print("feature", feature.shape)
 
     # define the anchors
     anchors = [[116, 90, 156, 198, 373, 326], [30, 61, 62, 45, 59, 119], [10, 13, 16, 30, 33, 23]]

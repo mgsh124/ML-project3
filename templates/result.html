@@ -8,7 +8,7 @@
                         <div class="col-9">
                             <div class="custom-file">
                                 <input type="file" name="file" class="custom-file-input" id="customFile">
-                                <label class="custom-file-label" for="customFile">Choose file</label>
+                                <label class="custom-file-label text-left" for="customFile">Choose file</label>
                             </div>
                         </div>
                         <div class="col-3">
@@ -21,22 +21,36 @@
         <div class="row mt-5 image-block">
             <div class="col">
                 <div class="border rounded-lg text-center p-2">
-                {% if original_image %}
-                    <img src="{{ url_for('static', filename=original_image) }}" class="img-fluid h-100" alt="Original image">
-                {% else %}
-                    <img src="//placehold.it/520x340?text=IMAGE" class="rounded img-fluid" id="preview"/>
-                {% endif %}
+                    {% if original_image %}
+                        <img src="{{ url_for('static', filename=original_image) }}" class="img-fluid h-100"
+                             alt="Original image">
+                    {% else %}
+                        <img src="//placehold.it/520x340?text=IMAGE" class="rounded img-fluid" id="preview"/>
+                    {% endif %}
                 </div>
             </div>
             <div class="col">
                 <div class="border rounded-lg text-center p-2">
-                {% if image_result %}
-                    <img src="{{ url_for('static', filename=image_result) }}" class="img-fluid h-100" alt="Detection image">
-                {% else %}
-                    <img src="//placehold.it/520x340?text=IMAGE" class="rounded img-fluid" id="preview"/>
-                {% endif %}
+                    {% if image_result and image_result.img_url %}
+                        <img src="{{ url_for('static', filename=image_result.img_url) }}" class="img-fluid h-100"
+                             alt="Detection image">
+                    {% else %}
+                        <img src="//placehold.it/520x340?text=IMAGE" class="rounded img-fluid" id="preview"/>
+                    {% endif %}
                 </div>
             </div>
         </div>
+        {% if image_result and image_result.captions %}
+            <div class="mt-5 image-caption">
+                <p>{{ image_result.captions }}</p>
+            </div>
+        {% endif %}
+
+        {% if image_result and image_result.audio_url %}
+            <audio controls autoplay>
+                <source id="caption_audio" src="{{ url_for('static', filename=image_result.audio_url) }}" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+        {% endif %}
     </div>
 {% endblock %}

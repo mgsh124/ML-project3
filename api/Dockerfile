@@ -11,10 +11,10 @@ RUN ["conda", "create", "-n", "myenv", "python=3.7"]
 
 # Install libraries inside conda environment
 RUN /bin/bash -c "source activate myenv && pip install flask && pip install numpy && \
-pip install keras && pip install pillow"
+pip install keras && pip install pillow && pip install matplotlib"
 
 # Copy API file
-COPY api.py /app/
+COPY api.py __init__.py image_captioning.py object_detection.py /app/
 
 WORKDIR /app
 RUN ls .

@@ -3,10 +3,11 @@ from werkzeug.utils import secure_filename
 import requests
 import json
 import os
+from gtts import gTTS
 
 API_URL = 'http://localhost:5000/project3/api/v1.0'
 UPLOAD_FOLDER = 'static/images/'
-ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -31,6 +32,7 @@ def home():
 
 @app.route('/detect', methods=['GET', 'POST'])
 def detect():
+    name = ''
     if request.method == 'POST':
         file = request.files['file']
         if file and allowed_file(file.filename):
@@ -43,12 +45,13 @@ def detect():
 
     print('name ', name)
     image_result = requests.get(API_URL + '/detect', params={'image_name': name})
-    print(image_result.content)
+    # print(image_result.content)
     print(image_result.json())
-    print(json.loads(image_result.content))
+    # print(json.loads(image_result.content))
     # info = unicodedata.normalize('NFKD', info.text).encode('ascii','ignore')
-    image_result = json.loads(image_result.content)['img_url'] if image_result.content and image_result.json() else {}
+    image_result = json.loads(image_result.content) if image_result.content and image_result.json() else {}
     # print(info)
+
     return render_template('result.html', image_result=image_result, original_image=name)
 
 

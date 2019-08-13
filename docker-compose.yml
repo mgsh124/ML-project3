@@ -1,0 +1,26 @@
+version: "3.3"
+
+services:
+
+#  api:
+#      container_name: web-api
+#      build: ./api
+#      restart: always
+#      ports:
+#        - "5000:5000"
+#      volumes:
+#        - ./data:/app/data/
+#        - ./static/images:/app/static/images/
+
+#  app:
+#    container_name: web-app
+#    build: .
+#    depends_on:
+#      - api
+#    restart: always
+#    ports:
+#      - "8080:8080"
+#    volumes:
+#      - ./static/images:/app/static/images/
+#    environment:
+#      WAIT_HOSTS: api:5000
