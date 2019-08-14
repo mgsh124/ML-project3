@@ -17,7 +17,6 @@ WORKDIR /app
 RUN pip install flask
 RUN pip install requests
 RUN pip install Werkzeug
-RUN pip install gTTS
 
 # Copy files
 COPY app.py /app/

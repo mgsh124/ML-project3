@@ -1,3 +1,4 @@
+# based on https://github.com/Faizan-E-Mustafa/Image-Captioning
 import pickle
 import numpy as np
 from keras.preprocessing import sequence, image
@@ -25,7 +26,7 @@ def preprocess(image_path):
 
 
 def get_caption_model():
-    model = load_model(DATA_PATH + '/imageCaption10.h5')
+    model = load_model(DATA_PATH + '/imageCaption20.h5')
     print("Image captioning model loaded")
     # model.summary()
     return model

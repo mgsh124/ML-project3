@@ -3,9 +3,8 @@ from werkzeug.utils import secure_filename
 import requests
 import json
 import os
-from gtts import gTTS
 
-API_URL = 'http://localhost:5000/project3/api/v1.0'
+API_URL = 'http://web-api:5000/project3/api/v1.0'
 UPLOAD_FOLDER = 'static/images/'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
