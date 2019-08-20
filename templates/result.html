@@ -5,16 +5,28 @@
             <div class="col-6">
                 <form action="" method=post enctype=multipart/form-data>
                     <div class="row">
-                        <div class="col-9">
+                        <div class="col-6">
                             <div class="custom-file">
                                 <input type="file" name="file" class="custom-file-input" id="customFile">
                                 <label class="custom-file-label text-left" for="customFile">Choose file</label>
                             </div>
                         </div>
+
+                        <div class="col-3">
+                            <select name="language">
+                          <option value="en">English</option>
+                          <option value="es">Spanish</option>
+                          <option value="vi">Vietnamese</option>
+                          <option value="ja">Japanese</option>
+                        </select>
+
+                        </div>
                         <div class="col-3">
                             <button type="submit" class="btn btn-primary">Process</button>
                         </div>
                     </div>
+
+
                 </form>
             </div>
         </div>

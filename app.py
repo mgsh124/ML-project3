@@ -4,7 +4,8 @@ import requests
 import json
 import os
 
-API_URL = 'http://web-api:5000/project3/api/v1.0'
+#API_URL = 'http://web-api:5000/project3/api/v1.0'
+API_URL = 'http://localhost:5000/project3/api/v1.0'
 UPLOAD_FOLDER = 'static/images/'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
@@ -23,7 +24,10 @@ def home():
         file = request.files['file']
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            print('filename', filename)
+            print('filename  ====', filename)
+            print('post info = ', request.values)
+            print('lang = ', request.values['language'])
+
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             return redirect(url_for('detect', name=filename))
     return render_template('result.html', info={})
@@ -36,15 +40,24 @@ def detect():
         file = request.files['file']
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            print('filename', filename)
+            print('filename = ', filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            return redirect(url_for('detect', name=filename))
+
+            print('post info = ', request.values)
+            print('lang = ', request.values['language'])
+
+            return redirect(url_for('detect', name=filename,lang=request.values['language']))
     else:
         name = 'images/' + request.args['name']
 
-    print('name ', name)
-    image_result = requests.get(API_URL + '/detect', params={'image_name': name})
-    # print(image_result.content)
+    print(request.args)
+
+    print('name =  ', name)
+
+    print('my lange =  ', request.args['lang'])
+
+    image_result = requests.get(API_URL + '/detect', params={'image_name': name, 'language':request.args['lang']})
+    print(image_result.content)
     print(image_result.json())
     # print(json.loads(image_result.content))
     # info = unicodedata.normalize('NFKD', info.text).encode('ascii','ignore')
@@ -55,4 +68,7 @@ def detect():
 
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=8080, debug=True)
+    app.run(host='127.0.0.1', port=1239, debug=True)
+
+#/usr/local/bin/python3.7 -m flask run --port=1234
+
